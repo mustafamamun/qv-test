@@ -1,0 +1,40 @@
+{
+  "name": "node-skeleton",
+  "version": "0.0.1",
+  "private": true,
+  "description": "New Swagger API Project",
+  "keywords": [],
+  "author": "",
+  "license": "",
+  "main": "app.js",
+  "dependencies": {
+    "app-root-path": "^2.0.1",
+    "babel-preset-es2015-node": "^6.1.1",
+    "bluebird": "^3.5.0",
+    "config": "^1.26.1",
+    "express": "^4.12.3",
+    "mongodb": "^2.2.28",
+    "morgan": "^1.8.2",
+    "swagger-express-mw": "^0.7.0",
+    "swagger-tools": "^0.10.1",
+    "winston": "^2.3.1"
+  },
+  "devDependencies": {
+    "should": "^7.1.0",
+    "supertest": "^1.0.0",
+    "tape": "^4.6.3",
+    "babel-cli": "^6.24.1",
+    "babel-core": "^6.25.0",
+    "babel-preset-stage-0": "^6.24.1"
+  },
+  "scripts": {
+    "start": "babel-node app.js",
+    "test": "mocha --compilers js:babel-core/register test/api/*"
+  },
+  "babel": {
+    "presets": [
+      "es2015-node",
+      "stage-0"
+    ]
+  }
+}

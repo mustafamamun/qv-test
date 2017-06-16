@@ -1,0 +1,11 @@
+
+ {
+  "port" : 10010,
+  "node_env" : "development",
+  "mongoConfig" : {
+    "host" : "127.0.0.11",
+    "port" : "27017",
+    "db" : "order_management",
+    "collection" : "orders"
+  }
+}
