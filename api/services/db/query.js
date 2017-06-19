@@ -1,9 +1,9 @@
 /*jslint node:true*/
 
 'user strict';
-const db = require(__dirname + '/connection').db,
- 			promise = require('bluebird'),
-			config = require('config');
+import { db }  from './connection';
+import 	promise from 'bluebird';
+import config from 'config';
 
 function saveToDB(data){
 	return new promise(function(resolve, reject){

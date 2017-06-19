@@ -1,7 +1,7 @@
 /*jslint node:true*/
 'use strict';
-const MongoClient = require('mongodb').MongoClient;
-const config = require('config');
+import { MongoClient } from 'mongodb';
+import  config from 'config';
 var url = 'mongodb://' + config.get('mongoConfig.host') + ':' + config.get('mongoConfig.port') + '/'+ config.get('mongoConfig.db');
 module.exports.init = function(options){
 	return new Promise(function(resolve, reject){

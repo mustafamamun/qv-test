@@ -2,13 +2,13 @@
 /*jslint white: true */
 'use strict';
 
-const SwaggerExpress = require('swagger-express-mw'),
-      SwaggerUi = require('swagger-tools/middleware/swagger-ui'),
-      app = require('express')(),
-      config = require('config'),
-      morgan = require('morgan'),
-      logger = require(__dirname + '/api/services/util/logger');
-
+import SwaggerExpress from 'swagger-express-mw';
+import SwaggerUi from 'swagger-tools/middleware/swagger-ui';
+import express from 'express';
+import config from 'config';
+import morgan from 'morgan';
+import { logger } from './api/services/util/logger';
+const app = express();
 let swaggerConfig = {
   appRoot: __dirname // required config
 };

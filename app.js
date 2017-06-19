@@ -1,10 +1,10 @@
 /*jslint node: true */
 'use strict';
-const mongodb = require(__dirname + '/api/services/db/connection.js'),
-      server = require(__dirname + '/server'),
-      logger = require(__dirname + '/api/services/util/logger').logger;
+import connection  from './api/services/db/connection';
+import server from './server';
+import { logger } from './api/services/util/logger';
 
-mongodb.init({})
+connection.init({})
 .then(server.start)
 .then(()=>{
 	console.log('server started');

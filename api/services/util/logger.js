@@ -1,5 +1,5 @@
-const winston = require('winston'),
-      config = require('config');
+import  winston from 'winston';
+import config from 'config';
 
 export const logger = new winston.Logger( {
     transports : [
