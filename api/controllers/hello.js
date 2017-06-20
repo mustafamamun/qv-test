@@ -1,8 +1,5 @@
 /*jslint node:true*/
 'use strict';
-const
-      root = require('app-root-path'),
-      logger = require(root + '/api/services/util/logger').logger;
 
 module.exports = {
   hello: hello
