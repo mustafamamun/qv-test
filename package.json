@@ -20,12 +20,13 @@
     "winston": "^2.3.1"
   },
   "devDependencies": {
-    "should": "^7.1.0",
-    "supertest": "^1.0.0",
-    "tape": "^4.6.3",
     "babel-cli": "^6.24.1",
     "babel-core": "^6.25.0",
-    "babel-preset-stage-0": "^6.24.1"
+    "babel-preset-stage-0": "^6.24.1",
+    "mocha": "^3.4.2",
+    "should": "^7.1.0",
+    "supertest": "^1.0.0",
+    "tape": "^4.6.3"
   },
   "scripts": {
     "start": "babel-node app.js",
