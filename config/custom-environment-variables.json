@@ -6,6 +6,7 @@
     "host" : "MONGO_DB_HOST",
     "port" : "MONGO_DB_PORT",
     "db" : "DATABASE_NAME",
-    "collection" : "COLLECTION_NAME"
+    "catalogCollection" : "CATALOG_COLLECTION_NAME",
+    "cartCollection": "CART_COLLECTION_NAME"
   }
 }

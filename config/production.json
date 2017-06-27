@@ -1,11 +1,11 @@
-
- {
-  "port" : 10010,
-  "node_env" : "production",
-  "mongoConfig" : {
-    "host" : "127.0.0.1",
-    "port" : "27017",
-    "db" : "order_management",
-    "collection" : "orders"
-  }
+{
+ "port" : 10010,
+ "node_env" : "production",
+ "mongoConfig" : {
+   "host" : "127.0.0.1",
+   "port" : "27017",
+   "db" : "product_inventory",
+   "catalogCollection" : "catalog",
+   "cartCollection": "cart"
+ }
 }

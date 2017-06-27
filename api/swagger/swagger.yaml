@@ -20,36 +20,363 @@ produces:
 paths:
   /hello:
     # binds a127 app logic to a route
-    x-swagger-router-controller: hello
+    x-swagger-router-controller: catalog
     get:
-      description: Returns the string given as message
+      description: Returns the products that matches the given query
       # used as the method name of the controller
-      operationId: hello
-      tags: ["hello"]
+      operationId: getProduct
+      tags: ["catalog"]
       parameters:
         - name: name
           in: query
-          description: The name of the person to whom to say hello
+          description: Full name or partial name of the product
           required: false
+          type: string
+        - name: _id
+          in: query
+          description: Id of the product to fetch
+          required: false
+          type: string
+        - name: offset
+          in: query
+          description: How many to skip
+          required: false
+          type: integer
+        - name: limit
+          in: query
+          description: How many to fetch
+          required: false
+          type: integer
+        - name: priceRange
+          in: query
+          description: Unit price of product
+          enum:
+            - lessThan5
+            - from5To10
+            - greaterThan10
+          type: string
+        - name: sort
+          in: query
+          description: sorting sequence
+          enum:
+            - name
+            - price
           type: string
       responses:
         "200":
-          description: Success
+          description: Success, product fetching successfull
           schema:
             # a pointer to a definition
-            $ref: "#/definitions/HelloWorldResponse"
-        # responses may fall through to errors
-        default:
-          description: Error
+            $ref: "#/definitions/GetProductResponse"
+        "204":
+          description: Content not found
           schema:
+            $ref: "#/definitions/ErrorResponse"
+        "400":
+          description: Bad Request, generally faulty
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "401":
+          description: Unauthorized, the requestor doesn't have permissions to see this
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: Not found, Requested url does not exist
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "500":
+          description: Internal server error, in cases where there are more details e.g. in relation to order management new status codes should be added to this definition. e.g. 531 the operation is not allowed because of thing X.
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "501":
+          description: Not implemented
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "503":
+          description: Service that this api relies on is not available, this is the case where something goes wrong in the systems that CLM is trying to access
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "default":
+          description: Undefined error situation, we have to add the properly defined error codes for this.
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/ErrorResponse"
+    post:
+      description: Add a product to the inventory
+      # used as the method name of the controller
+      operationId: addProduct
+      tags: ["catalog"]
+      parameters:
+        - name: productDetails
+          in: body
+          description: Details of the product to be added
+          required: true
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/AddProductRequest"
+      responses:
+        "201":
+          description: Success, product successfully added to catalog
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/AddProductResponse"
+        "204":
+          description: Content not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "400":
+          description: Bad Request, generally faulty
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "401":
+          description: Unauthorized, the requestor doesn't have permissions to see this
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: Not found, Requested url does not exist
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "500":
+          description: Internal server error, in cases where there are more details e.g. in relation to order management new status codes should be added to this definition. e.g. 531 the operation is not allowed because of thing X.
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "501":
+          description: Not implemented
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "503":
+          description: Service that this api relies on is not available, this is the case where something goes wrong in the systems that CLM is trying to access
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "default":
+          description: Undefined error situation, we have to add the properly defined error codes for this.
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/ErrorResponse"
+    put:
+      description:  Fully update the product
+      # used as the method name of the controller
+      operationId: updateProduct
+      tags: ["catalog"]
+      parameters:
+        - name: productDetails
+          in: body
+          description: Details of the product to be added
+          required: true
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/UpdateProductRequest"
+      responses:
+        "200":
+          description: Success, product successfully updated
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/UpdateProductResponse"
+        "204":
+          description: Content not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "400":
+          description: Bad Request, generally faulty
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "401":
+          description: Unauthorized, the requestor doesn't have permissions to see this
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: Not found, Requested url does not exist
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "500":
+          description: Internal server error, in cases where there are more details e.g. in relation to order management new status codes should be added to this definition. e.g. 531 the operation is not allowed because of thing X.
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "501":
+          description: Not implemented
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "503":
+          description: Service that this api relies on is not available, this is the case where something goes wrong in the systems that CLM is trying to access
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "default":
+          description: Undefined error situation, we have to add the properly defined error codes for this.
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/ErrorResponse"
+    patch:
+      description: Partially update the product
+      # used as the method name of the controller
+      operationId: updateProductPartially
+      tags: ["catalog"]
+      parameters:
+        - name: _id
+          in: query
+          description: unique id of the product
+          required: true
+          type: string
+        - name: productDetails
+          in: body
+          description: Details of the product to be added
+          required: true
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/UpdateProductPartiallyRequest"
+      responses:
+        "200":
+          description: Success, product successfully updated
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/UpdateProductPartiallyResponse"
+        "204":
+          description: Content not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "400":
+          description: Bad Request, generally faulty
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "401":
+          description: Unauthorized, the requestor doesn't have permissions to see this
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: Not found, Requested url does not exist
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "500":
+          description: Internal server error, in cases where there are more details e.g. in relation to order management new status codes should be added to this definition. e.g. 531 the operation is not allowed because of thing X.
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "501":
+          description: Not implemented
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "503":
+          description: Service that this api relies on is not available, this is the case where something goes wrong in the systems that CLM is trying to access
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "default":
+          description: Undefined error situation, we have to add the properly defined error codes for this.
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/ErrorResponse"
+    delete:
+      description: Delete product from catalog
+      # used as the method name of the controller
+      operationId: deleteProduct
+      tags: ["catalog"]
+      parameters:
+        - name: _id
+          in: query
+          description: unique id of the product
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Success, product successfully removed
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/DeleteProductResponse"
+        "204":
+          description: Content not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "400":
+          description: Bad Request, generally faulty
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "401":
+          description: Unauthorized, the requestor doesn't have permissions to see this
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: Not found, Requested url does not exist
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "500":
+          description: Internal server error, in cases where there are more details e.g. in relation to order management new status codes should be added to this definition. e.g. 531 the operation is not allowed because of thing X.
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "501":
+          description: Not implemented
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "503":
+          description: Service that this api relies on is not available, this is the case where something goes wrong in the systems that CLM is trying to access
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "default":
+          description: Undefined error situation, we have to add the properly defined error codes for this.
+          schema:
+            # a pointer to a definition
             $ref: "#/definitions/ErrorResponse"
   /swagger:
     x-swagger-pipe: swagger_raw
 # complex objects have schema definitions
 definitions:
-  HelloWorldResponse:
+  productDetails:
     required:
-      - message
+      - name
+      - unitPrice
+      - quantity
+      - _id
+    properties:
+      name:
+        type: string
+        description: Name of the product
+      unitPrice:
+        type: number
+        description: Per unit price of the product
+      quantity:
+        type: integer
+        description: Available units of the product in the inventory
+      _id:
+        type: string
+        description: Unique product id
+  AddProductRequest:
+    required:
+      - name
+      - unitPrice
+      - quantity
+    properties:
+      name:
+        type: string
+        description: Name of the product
+      unitPrice:
+        type: number
+        description: Per unit price of the product
+      quantity:
+        type: integer
+        description: Available units of the product in the inventory
+      _id:
+        type: string
+        description: Unique product id, only provided when the product exists.
+  AddProductResponse:
+    $ref: "#/definitions/productDetails"
+  UpdateProductRequest:
+    $ref: "#/definitions/productDetails"
+  UpdateProductResponse:
+    $ref: "#/definitions/productDetails"
+  UpdateProductPartiallyRequest:
+    properties:
+      name:
+        type: string
+        description: Name of the product
+      unitPrice:
+        type: number
+        description: Per unit price of the product
+      quantity:
+        type: integer
+        description: Available units of the product in the inventory
+  UpdateProductPartiallyResponse:
+    $ref: "#/definitions/productDetails"
+  GetProductResponse:
+    properties:
+      message:
+        type: string
+  DeleteProductResponse:
     properties:
       message:
         type: string

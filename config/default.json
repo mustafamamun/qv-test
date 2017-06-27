@@ -5,7 +5,8 @@
   "mongoConfig" : {
     "host" : "127.0.0.1",
     "port" : "27017",
-    "db" : "order_management",
-    "collection" : "orders"
+    "db" : "product_inventory",
+    "catalogCollection" : "catalog",
+    "cartCollection": "cart"
   }
 }

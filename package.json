@@ -13,10 +13,12 @@
     "bluebird": "^3.5.0",
     "config": "^1.26.1",
     "express": "^4.12.3",
+    "lodash": "^4.17.4",
     "mongodb": "^2.2.28",
     "morgan": "^1.8.2",
     "swagger-express-mw": "^0.7.0",
     "swagger-tools": "^0.10.1",
+    "uuid": "^3.1.0",
     "winston": "^2.3.1"
   },
   "devDependencies": {
