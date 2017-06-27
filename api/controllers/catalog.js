@@ -6,7 +6,6 @@ import _ from 'lodash';
 import { logger } from '../services/util/logger';
 import { ObjectId } from 'mongodb';
 const collectionName = config.get('mongoConfig.catalogCollection');
-// const IdRegExp = new RegExp('/^(?=[a-f\d]{24}$)(\d+[a-f]|[a-f]+\d)/i');
 const IdRegExp = /^(?=[a-f\d]{24}$)(\d+[a-f]|[a-f]+\d)/i;
 module.exports = {
   getProduct,
@@ -59,6 +58,7 @@ function getProduct(req, res, next) {
         return res.json({total : count, count : result.length, results : result});
     });
   }).catch((err)=>{
+    logger.error(err);
     return res.status(500).json(err);
   });
 
@@ -66,37 +66,14 @@ function getProduct(req, res, next) {
 
 function addProduct(req, res, next){
   let productDetails = _.assign({}, {name : req.body.name, unitPrice: req.body.unitPrice, quantity : req.body.quantity});
-  let _id = req.body.name_id;
-  if(_id){
-    if(!IdRegExp.test(_id)){
-      return res.status(400).json({message : 'Bad request, Id is not in write format'});
-    }
-    let qs = { _id : new ObjectId(_id)};
-    query.getFromDB(collectionName, qs)
-    .then((result)=>{
-      if(result.length>0){
-        let us = { $inc : {quantity : req.body.quantity}};
-        return query.updateDB(collectionName, qs, us);
-      }else{
-        query.saveToDB(collectionName, productDetails);
-      }
-    })
-    .then((result)=>{
-      res.json(result);
-    })
-    .catch((err)=>{
-      return res.json(err);
-    });
-  }else{
-    query.saveToDB(collectionName, productDetails)
-    .then((result)=>{
-      return res.status(201).json(productDetails);
-    }).catch((err)=>{
-      logger.error(err);
-      return res.status(500).json({message : 'Internal server error'});
-    });
-  }
-
+  query.saveToDB(collectionName, productDetails)
+  .then((result)=>{
+    return res.status(201).json(productDetails);
+  })
+  .catch((err)=>{
+    logger.error(err);
+    return res.status(500).json({message : 'Internal server error'});
+  });
 }
 
 function updateProduct(req, res, next){
@@ -105,7 +82,7 @@ function updateProduct(req, res, next){
   }
   let qs = _.assign({}, {_id : new ObjectId(req.body._id)});
   let us = _.assign({}, req.body, {_id : new ObjectId(req.body._id)});
-  query.updateDB(collectionName, qs, us)
+  query.updateDB(collectionName, qs, {$set : us})
   .then((result)=>{
     if((result.result || {}).n > 0 && (result.result || {}).nModified > 0){
       return res.status(200).json(us);
@@ -135,7 +112,7 @@ function updateProductPartially(req, res, next){
   if(_.isEmpty(us)){
     return res.status(400).json({messge : 'Update parameters are not right'});
   }
-  query.updateDB(collectionName, qs, us)
+  query.updateDB(collectionName, qs, {$set : us})
   .then(()=>{ return query.getFromDB(collectionName, qs); })
   .then((result)=>{
     if(result.length === 0){
@@ -145,6 +122,7 @@ function updateProductPartially(req, res, next){
     }
   })
   .catch((err)=>{
+    logger.error(err);
     return res.status(500).json({message : 'Internal server error'});
   });
 }

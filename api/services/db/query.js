@@ -18,7 +18,7 @@ function saveToDB(collection, data){
 }
 function updateDB(collection, qs, us){
 	return new promise(function(resolve, reject){
-		return db.collection(collection).update(qs, {$set:us}, {upsert : false}, function(err, result){
+		return db.collection(collection).update(qs, us, {upsert : false}, function(err, result){
 			if(err) {
 				reject(err);
 			}else{
@@ -38,6 +38,7 @@ function removeFromDB(collection, qs){
 function findCount(collection, qs){
  	return db.collection(collection).find(qs).count();
 }
+
 
 
 module.exports = {
