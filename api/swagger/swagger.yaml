@@ -319,7 +319,7 @@ paths:
             $ref: "#/definitions/ErrorResponse"
   /catalog/item:
     # binds a127 app logic to a route
-    x-swagger-router-controller: item
+    x-swagger-router-controller: catalog
     post:
       description: Add more item in the product catalog
       # used as the method name of the controller

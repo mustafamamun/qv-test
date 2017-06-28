@@ -6,6 +6,7 @@ import _ from 'lodash';
 import { logger } from '../services/util/logger';
 import { ObjectId } from 'mongodb';
 import promise from 'bluebird';
+import createError from 'http-errors';
 const collectionName = config.get('mongoConfig.catalogCollection');
 const IdRegExp = /^(?=[a-f\d]{24}$)(\d+[a-f]|[a-f]+\d)/i;
 module.exports = {
@@ -88,12 +89,10 @@ function updateProduct(req, res, next){
   let us = _.assign({}, {name : req.body.name, unitPrice : req.body.unitPrice, quantity : req.body.quantity});
   query.updateDB(collectionName, qs, {$set : us})
   .then((result)=>{
-    if((result.result || {}).n > 0 && (result.result || {}).nModified > 0){
+    if((result.result || {}).n > 0){
       return query.getFromDB(collectionName, qs);
     }else if((result.result || {}).n ===0){
       return promise.reject({status : 204, message : 'Contend to be modified not found'});
-    }else if((result.result || {}).nModified === 0){
-      return promise.reject({status : 500, message : 'Could not modify the product'});
     }else{
       return promise.reject({status : 500, message : 'Something wrong happend'});
     }
@@ -118,17 +117,21 @@ function updateProductPartially(req, res, next){
     return res.status(400).json({messge : 'Update parameters are not right'});
   }
   query.updateDB(collectionName, qs, {$set : us})
-  .then(()=>{ return query.getFromDB(collectionName, qs); })
   .then((result)=>{
-    if(result.length === 0){
-      return res.status(204).json({message : 'Content not found'});
+    if((result.result || {}).n > 0){
+      return query.getFromDB(collectionName, qs);
+    }else if((result.result || {}).n ===0){
+      return promise.reject({status : 204, message : 'Contend to be modified not found'});
     }else{
-      return res.status(200).json(result[0]);
+      return promise.reject({status : 500, message : 'Something wrong happend'});
     }
+  })
+  .then((result)=>{
+      return res.status(200).json(result[0]);
   })
   .catch((err)=>{
     logger.error(err);
-    return res.status(500).json({message : 'Internal server error'});
+    return next(err);
   });
 }
 
@@ -143,7 +146,7 @@ function deleteProduct(req, res, next){
       return (result.result ||  {}).n > 0 ?  res.status(200).json({message : `Successfully removed product with id ${req.swagger.params._id_value}`}) : res.status(204).json({message : `Content not found with id ${req.swagger.params._id_value}`});
   }).catch((err)=>{
     logger.error(err);
-    res.status(500).json({message : 'Internal server error'});
+    return next(err);
   });
 }
 function addItem(req, res, next){
@@ -155,19 +158,20 @@ function addItem(req, res, next){
   let us = {$inc : _.assign({},{quantity : req.body.quantity})};
   query.updateDB(collectionName, qs, us)
   .then((result)=>{
-    if((result.result || {}).n > 0 && (result.result || {}).nModified > 0){
-      return res.status(200).json({message : 'Item added to product catalog'});
+    if((result.result || {}).n > 0){
+      return query.getFromDB(collectionName, qs);
     }else if((result.result || {}).n ===0){
-      return res.status(204).json({messge : 'Contend to be modified not found'});
-    }else if((result.result || {}).nModified === 0){
-      return res.status(500).json({message : 'Could not modify the product'});
+      return promise.reject({status : 204, message : 'Contend to be modified not found'});
     }else{
-      return res.status(500).json({message : 'Something wrong happend'});
+      return promise.reject({status : 500, message : 'Something wrong happend'});
     }
+  })
+  .then((result)=>{
+      return res.status(200).json(result[0]);
   })
   .catch((err)=>{
     logger.error(err);
-    res.status(500).json({message : 'Internal server error'});
+    return next(createError(err.status, err.message));
   });
 }
 
@@ -180,18 +184,19 @@ function removeItem(req, res, next){
   let us = {$inc : _.assign({},{quantity : -req.body.quantity})};
   query.updateDB(collectionName, qs, us)
   .then((result)=>{
-    if((result.result || {}).n > 0 && (result.result || {}).nModified > 0){
-      return res.status(200).json({message : 'Item removed product catalog'});
+    if((result.result || {}).n > 0){
+      return query.getFromDB(collectionName, qs);
     }else if((result.result || {}).n ===0){
-      return res.status(204).json({messge : 'Contend to be modified not found'});
-    }else if((result.result || {}).nModified === 0){
-      return res.status(500).json({message : 'Could not modify the product'});
+      return promise.reject({status : 204, message : 'Contend to be modified not found'});
     }else{
-      return res.status(500).json({message : 'Something wrong happend'});
+      return promise.reject({status : 500, message : 'Something wrong happend'});
     }
+  })
+  .then((result)=>{
+      return res.status(200).json(result[0]);
   })
   .catch((err)=>{
     logger.error(err);
-    return res.status(500).json({message : 'Internal server error'});
+    return next(err);
   });
 }
