@@ -51,7 +51,7 @@ function addItemToCart(req, res, next){
        })
        .value();
       responseObj = result[0];
-      return query.updateDB(collectionName, {customerId:customerId}, {$set : {products : result[0].products, total : result[0].total}});
+      return query.updateDB(collectionName, {customerId:customerId}, {$set : {products : result[0].products }});
     }else{
       let cartDetails = _.assign({}, {customerId : customerId, products : [{_id :  req.body.productId, quantity: req.body.quantity, unitPrice : req.body.unitPrice}]});
       responseObj = cartDetails;

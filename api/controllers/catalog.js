@@ -5,6 +5,7 @@ import query from '../services/db/query';
 import _ from 'lodash';
 import { logger } from '../services/util/logger';
 import { ObjectId } from 'mongodb';
+import promise from 'bluebird';
 const collectionName = config.get('mongoConfig.catalogCollection');
 const IdRegExp = /^(?=[a-f\d]{24}$)(\d+[a-f]|[a-f]+\d)/i;
 module.exports = {
@@ -67,39 +68,41 @@ function getProduct(req, res, next) {
 }
 
 function addProduct(req, res, next){
-  let productDetails = _.assign({}, {name : req.body.name, unitPrice: req.body.unitPrice, quantity : req.body.quantity});
+  let productDetails = _.assign({}, {_id : new ObjectId(), name : req.body.name, unitPrice: req.body.unitPrice, quantity : req.body.quantity});
   query.saveToDB(collectionName, productDetails)
+  .then(result=>query.getFromDB(collectionName, {_id: productDetails._id}))
   .then((result)=>{
-    return res.status(201).json(productDetails);
+    return res.status(201).json(result[0]);
   })
   .catch((err)=>{
-    logger.error(err);
+    //logger.error(err);
     return res.status(500).json({message : 'Internal server error'});
   });
 }
 
 function updateProduct(req, res, next){
-  if(!IdRegExp.test(req.body.id)){
+  if(!IdRegExp.test(req.swagger.params._id.value)){
     return res.status(400).json({message : 'Bad request, Id is not in write format'});
   }
-  let qs = _.assign({}, {_id : new ObjectId(req.body._id)});
-  let us = _.assign({}, req.body, {_id : new ObjectId(req.body._id)});
+  let qs = _.assign({}, {_id : new ObjectId(req.swagger.params._id.value)});
+  let us = _.assign({}, {name : req.body.name, unitPrice : req.body.unitPrice, quantity : req.body.quantity});
   query.updateDB(collectionName, qs, {$set : us})
   .then((result)=>{
     if((result.result || {}).n > 0 && (result.result || {}).nModified > 0){
-      return res.status(200).json(us);
+      return query.getFromDB(collectionName, qs);
     }else if((result.result || {}).n ===0){
-      return res.status(204).json({messge : 'Contend to be modified not found'});
+      return promise.reject({status : 204, message : 'Contend to be modified not found'});
     }else if((result.result || {}).nModified === 0){
-      return res.status(500).json({message : 'Could not modify the product'});
+      return promise.reject({status : 500, message : 'Could not modify the product'});
     }else{
-      return res.status(500).json({message : 'Something wrong happend'});
+      return promise.reject({status : 500, message : 'Something wrong happend'});
     }
 
   })
+  .then((result)=> { return res.status(200).json(result[0]); })
   .catch((err)=>{
     logger.error(err);
-    return res.status(500).json({messge: 'Internal server error'});
+    return next(err);
   });
 }
 

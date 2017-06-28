@@ -159,6 +159,11 @@ paths:
       operationId: updateProduct
       tags: ["catalog"]
       parameters:
+        - name: _id
+          in: query
+          description: unique id of the product
+          required: true
+          type: string
         - name: productDetails
           in: body
           description: Details of the product to be added
@@ -548,7 +553,7 @@ paths:
       parameters:
         - name: customerId
           in: query
-          description: Details of the product to be added
+          description: Customer id
           required: true
           type: string
         - name: productDetails
@@ -784,7 +789,16 @@ definitions:
   AddProductResponse:
     $ref: "#/definitions/productDetails"
   UpdateProductRequest:
-    $ref: "#/definitions/productDetails"
+    properties:
+      name:
+        type: string
+        description: Name of the product
+      unitPrice:
+        type: number
+        description: Per unit price of the product
+      quantity:
+        type: integer
+        description: Available units of the product in the inventory
   UpdateProductResponse:
     $ref: "#/definitions/productDetails"
   UpdateProductPartiallyRequest:
