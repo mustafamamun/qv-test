@@ -27,8 +27,8 @@ function updateDB(collection, qs, us){
 		});
 	});
 }
-function getFromDB(collection, qs, paging, sort){
-	return db.collection(collection).find(qs, paging).sort(sort).toArray();
+function getFromDB(collection, qs, options, paging, sort){
+	return db.collection(collection).find(qs, options, paging).sort(sort).toArray();
 }
 
 function removeFromDB(collection, qs){

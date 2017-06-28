@@ -12,7 +12,9 @@ module.exports = {
   addProduct,
   updateProduct,
   updateProductPartially,
-  deleteProduct
+  deleteProduct,
+  addItem,
+  removeItem
 };
 //Controller function
 function getProduct(req, res, next) {
@@ -51,7 +53,7 @@ function getProduct(req, res, next) {
           limit : req.swagger.params.limit.value || 20,
           skip : req.swagger.params.offset.value || 0
       };
-  query.getFromDB(collectionName, qs)
+  query.getFromDB(collectionName, qs, {}, paging, sort)
   .then((result)=>{
     return query.findCount(collectionName, qs)
     .then((count)=>{
@@ -139,5 +141,54 @@ function deleteProduct(req, res, next){
   }).catch((err)=>{
     logger.error(err);
     res.status(500).json({message : 'Internal server error'});
+  });
+}
+function addItem(req, res, next){
+  let _id = req.swagger.params.productId.value;
+  if(!IdRegExp.test(_id)){
+    return res.status(400).json({message : 'Product id is not correct'});
+  }
+  let qs = { _id : new ObjectId(_id)};
+  let us = {$inc : _.assign({},{quantity : req.body.quantity})};
+  query.updateDB(collectionName, qs, us)
+  .then((result)=>{
+    if((result.result || {}).n > 0 && (result.result || {}).nModified > 0){
+      return res.status(200).json({message : 'Item added to product catalog'});
+    }else if((result.result || {}).n ===0){
+      return res.status(204).json({messge : 'Contend to be modified not found'});
+    }else if((result.result || {}).nModified === 0){
+      return res.status(500).json({message : 'Could not modify the product'});
+    }else{
+      return res.status(500).json({message : 'Something wrong happend'});
+    }
+  })
+  .catch((err)=>{
+    logger.error(err);
+    res.status(500).json({message : 'Internal server error'});
+  });
+}
+
+function removeItem(req, res, next){
+  let _id = req.swagger.params.productId.value;
+  if(!IdRegExp.test(_id)){
+    return res.status(400).json({message : 'Product id is not correct'});
+  }
+  let qs = { _id : new ObjectId(_id)};
+  let us = {$inc : _.assign({},{quantity : -req.body.quantity})};
+  query.updateDB(collectionName, qs, us)
+  .then((result)=>{
+    if((result.result || {}).n > 0 && (result.result || {}).nModified > 0){
+      return res.status(200).json({message : 'Item removed product catalog'});
+    }else if((result.result || {}).n ===0){
+      return res.status(204).json({messge : 'Contend to be modified not found'});
+    }else if((result.result || {}).nModified === 0){
+      return res.status(500).json({message : 'Could not modify the product'});
+    }else{
+      return res.status(500).json({message : 'Something wrong happend'});
+    }
+  })
+  .catch((err)=>{
+    logger.error(err);
+    return res.status(500).json({message : 'Internal server error'});
   });
 }

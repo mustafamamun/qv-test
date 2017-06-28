@@ -435,11 +435,11 @@ paths:
           schema:
             # a pointer to a definition
             $ref: "#/definitions/ErrorResponse"
-  /cart/item:
+  /cart/items:
     # binds a127 app logic to a route
     x-swagger-router-controller: cart
     get:
-      description: Returns the products that matches the given query
+      description: Fetch item from the cart
       # used as the method name of the controller
       operationId: getCartItems
       tags: ["cart"]
@@ -489,12 +489,12 @@ paths:
             # a pointer to a definition
             $ref: "#/definitions/ErrorResponse"
     post:
-      description: Add a product to the inventory
+      description: Add a item to the cart
       # used as the method name of the controller
       operationId: addItemToCart
       tags: ["cart"]
       parameters:
-        - name: productDetails
+        - name: cartDetails
           in: body
           description: Details of the product to be added
           required: true
@@ -507,6 +507,186 @@ paths:
           schema:
             # a pointer to a definition
             $ref: "#/definitions/AddProductToCartResponse"
+        "204":
+          description: Content not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "400":
+          description: Bad Request, generally faulty
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "401":
+          description: Unauthorized, the requestor doesn't have permissions to see this
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: Not found, Requested url does not exist
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "500":
+          description: Internal server error, in cases where there are more details e.g. in relation to order management new status codes should be added to this definition. e.g. 531 the operation is not allowed because of thing X.
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "501":
+          description: Not implemented
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "503":
+          description: Service that this api relies on is not available, this is the case where something goes wrong in the systems that CLM is trying to access
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "default":
+          description: Undefined error situation, we have to add the properly defined error codes for this.
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/ErrorResponse"
+    put:
+      description: Add a item to the cart
+      # used as the method name of the controller
+      operationId: updateCartItems
+      tags: ["cart"]
+      parameters:
+        - name: customerId
+          in: query
+          description: Details of the product to be added
+          required: true
+          type: string
+        - name: productDetails
+          in: body
+          description: Details of the product to be added
+          required: true
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/UpdateCartRequest"
+      responses:
+        "200":
+          description: Success, product successfully added to catalog
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/UpdateCartResponse"
+        "204":
+          description: Content not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "400":
+          description: Bad Request, generally faulty
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "401":
+          description: Unauthorized, the requestor doesn't have permissions to see this
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: Not found, Requested url does not exist
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "500":
+          description: Internal server error, in cases where there are more details e.g. in relation to order management new status codes should be added to this definition. e.g. 531 the operation is not allowed because of thing X.
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "501":
+          description: Not implemented
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "503":
+          description: Service that this api relies on is not available, this is the case where something goes wrong in the systems that CLM is trying to access
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "default":
+          description: Undefined error situation, we have to add the properly defined error codes for this.
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/ErrorResponse"
+    delete:
+      description: Delete product from the product catalog
+      # used as the method name of the controller
+      operationId: removeCartItem
+      tags: ["cart"]
+      parameters:
+        - name: customerId
+          in: query
+          description: unique id of the customer
+          required: true
+          type: string
+        - name: productId
+          in: query
+          description: unique id of the product
+          required: true
+          type: string
+        - name: itemDetails
+          in: body
+          description: Details of the product to be added
+          required: true
+          schema:
+            required:
+              - quantity
+            properties:
+              quantity:
+                type: integer
+      responses:
+        "200":
+          description: Success, product removing successfull
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/GeneralResponse"
+        "204":
+          description: Content not found
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "400":
+          description: Bad Request, generally faulty
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "401":
+          description: Unauthorized, the requestor doesn't have permissions to see this
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "404":
+          description: Not found, Requested url does not exist
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "500":
+          description: Internal server error, in cases where there are more details e.g. in relation to order management new status codes should be added to this definition. e.g. 531 the operation is not allowed because of thing X.
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "501":
+          description: Not implemented
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "503":
+          description: Service that this api relies on is not available, this is the case where something goes wrong in the systems that CLM is trying to access
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        "default":
+          description: Undefined error situation, we have to add the properly defined error codes for this.
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/ErrorResponse"
+  /cart/product:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: cart
+    delete:
+      description: Delete product from the product catalog
+      # used as the method name of the controller
+      operationId: removeCartproduct
+      tags: ["cart"]
+      parameters:
+        - name: customerId
+          in: query
+          description: unique id of the customer
+          required: true
+          type: string
+        - name: productId
+          in: query
+          description: unique id of the product
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Success, product removing successfull
+          schema:
+            # a pointer to a definition
+            $ref: "#/definitions/GeneralResponse"
         "204":
           description: Content not found
           schema:
@@ -554,6 +734,10 @@ definitions:
       products:
         type: array
         items:
+          required:
+            - productId
+            - quantity
+            - unitPrice
           properties:
             productId:
               type: string
@@ -639,6 +823,22 @@ definitions:
   AddProductToCartResponse:
     $ref: "#/definitions/CartDetails"
   GetProductFromCartResponse:
+    $ref: "#/definitions/CartDetails"
+  UpdateCartRequest:
+    type: array
+    items:
+      required:
+        - productId
+        - quantity
+        - unitPrice
+      properties:
+        productId:
+          type: string
+        quantity:
+          type: integer
+        unitPrice:
+          type: number
+  UpdateCartResponse:
     $ref: "#/definitions/CartDetails"
   GeneralResponse:
     properties:
