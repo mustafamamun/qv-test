@@ -72,17 +72,65 @@ describe('User Controller', function() {
                 });
             });
         });
-      describe('Sould delete the created product', function() {
+        describe('Sould update the created product', function() {
 
-          it('Sould delete the created product', function(done) {
-              request(app)
-                .delete(`/catalog/product?_id=${_id}`)
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end(function (err, res) {
-                  res.body.message.should.equal(`Successfully removed product with id ${_id}`);
-                  done();
+            it('Sould update the created product', function(done) {
+                request(app)
+                  .patch(`/catalog/product?_id=${_id}`)
+                  .send({
+                    "quantity": 100
+                  })
+                  .expect(200)
+                  .expect('Content-Type', /json/)
+                  .end(function (err, res) {
+                    res.body.quantity.should.equal(100);
+                    done();
+                  });
+              });
+          });
+          describe('Sould update the created product', function() {
+
+              it('Sould update the created product', function(done) {
+                  request(app)
+                    .post(`/catalog/item?productId=${_id}`)
+                    .send({
+                      "quantity": 20
+                    })
+                    .expect(200)
+                    .expect('Content-Type', /json/)
+                    .end(function (err, res) {
+                      res.body.quantity.should.equal(120);
+                      done();
+                    });
                 });
             });
-        });
+            describe('Sould update the created product', function() {
+
+                it('Sould update the created product', function(done) {
+                    request(app)
+                      .delete(`/catalog/item?productId=${_id}`)
+                      .send({
+                        "quantity": 20
+                      })
+                      .expect(200)
+                      .expect('Content-Type', /json/)
+                      .end(function (err, res) {
+                        res.body.quantity.should.equal(100);
+                        done();
+                      });
+                  });
+              });
+            describe('Sould delete the created product', function() {
+
+                it('Sould delete the created product', function(done) {
+                    request(app)
+                      .delete(`/catalog/product?_id=${_id}`)
+                      .expect(200)
+                      .expect('Content-Type', /json/)
+                      .end(function (err, res) {
+                        res.body.message.should.equal(`Successfully removed product with id ${_id}`);
+                        done();
+                      });
+                  });
+              });
 });
