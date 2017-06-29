@@ -5,6 +5,8 @@ import query from '../services/db/query';
 import _ from 'lodash';
 import { logger } from '../services/util/logger';
 import { ObjectId } from 'mongodb';
+import createError from 'http-errors';
+import promise from 'bluebird';
 const collectionName = config.get('mongoConfig.cartCollection');
 
 module.exports = {
@@ -29,20 +31,17 @@ function getCartItems(req, res, next){
   })
   .catch((err)=>{
     logger.error(err);
-    return res.status(500).json({message: 'Internal server error'});
+    return next(createError(err.status || 500, err.message || 'Internal server errror'));
   });
 }
 
 
 function addItemToCart(req, res, next){
-  let responseObj;
   let customerId = req.body.customerId;
   query.getFromDB(collectionName, {customerId : customerId})
   .then((result)=>{
-    console.log(result);
     if(result.length > 0){
       result[0].products.push(_.assign({}, {_id :  req.body.productId, quantity: req.body.quantity, unitPrice : req.body.unitPrice}));
-      console.dir(result[0].products, {depth:null});
       result[0].products = _
        .chain(result[0].products)
        .groupBy('_id')
@@ -50,21 +49,15 @@ function addItemToCart(req, res, next){
          return {_id : key, quantity : _.sumBy(value, (eachValue)=>{ return eachValue.quantity; }), unitPrice : value[0].unitPrice};
        })
        .value();
-      responseObj = result[0];
       return query.updateDB(collectionName, {customerId:customerId}, {$set : {products : result[0].products }});
     }else{
       let cartDetails = _.assign({}, {customerId : customerId, products : [{_id :  req.body.productId, quantity: req.body.quantity, unitPrice : req.body.unitPrice}]});
-      responseObj = cartDetails;
       return query.saveToDB(collectionName, cartDetails);
     }
   })
-  .then((result)=>{
-    return res.status(200).json(_.omit(responseObj, '_id'));
-  })
-  .catch((err)=>{
-    logger.error(err);
-    return res.status(500).json({message : 'Internal server error'});
-  });
+  .then(result=>query.getFromDB(collectionName, {customerId : req.body.customerId}, {_id:0}))
+  .then((result)=>{ return res.status(200).json(_.merge(result[0], {total : _.sumBy(result[0].products, (eacheProduct)=>{ return eacheProduct.quantity * eacheProduct.unitPrice; })})); })
+  .catch((err)=>{ logger.error(err); return next(createError(err.status || 500, err.message || 'Internal server errror')); });
 }
 
 function updateCartItems(req, res, next){
@@ -72,17 +65,16 @@ function updateCartItems(req, res, next){
     let us = {$set : {products: req.body}};
     query.updateDB(collectionName, qs, us)
     .then((result)=>{
-      if((result.result || {}).n > 0 && (result.result || {}).nModified > 0){
-        return res.status(200).json({message : 'Item added to cart'});
+      if((result.result || {}).n > 0){
+        return query.getFromDB(collectionName, qs, {_id:0});
       }else if((result.result || {}).n ===0){
-        return res.status(204).json({messge : 'Contend to be modified not found'});
-      }else if((result.result || {}).nModified === 0){
-        return res.status(500).json({message : 'Could not modify the cart'});
+        return promise.reject({status : 204, message: 'Content not found'});
       }else{
-        return res.status(500).json({message : 'Something wrong happend'});
+        return promise.reject({status : 500, message : 'Something wrong happend'});
       }
     })
-    .catch((err)=>{ logger.error(err); return res.status(500).json({message :  'Internal server error'}); });
+    .then((result)=>{ return res.status(200).json(_.merge(result[0], {total : _.sumBy(result[0].products, (eacheProduct)=>{ return eacheProduct.quantity * eacheProduct.unitPrice; })})); })
+    .catch((err)=>{ logger.error(err); return next(createError(err.status || 500, err.message || 'Internal server errror')); });
 }
 
 function removeCartItem(req, res, next){
@@ -90,16 +82,16 @@ function removeCartItem(req, res, next){
   let us = {$inc:{"products.$.quantity": -req.body.quantity }};
   query.updateDB(collectionName, qs, us)
   .then((result)=>{
-    if((result.result || {}).n > 0 && (result.result || {}).nModified > 0){
-      return res.status(200).json({message : 'Item removed from cart'});
+    if((result.result || {}).n > 0){
+      return query.getFromDB(collectionName, {customerId : req.swagger.params.customerId.value}, {_id:0});
     }else if((result.result || {}).n ===0){
-      return res.status(204).json({messge : 'Contend to be modified not found'});
-    }else if((result.result || {}).nModified === 0){
-      return res.status(500).json({message : 'Could not modify the product'});
+      return promise.reject({status : 204, message: 'Content not found'});
     }else{
-      return res.status(500).json({message : 'Something wrong happend'});
+      return promise.reject({status : 500, message : 'Something wrong happend'});
     }
-  }).catch((err)=>{ logger.error(err); return res.status(500).json({message : 'Internal server error'}); });
+  })
+  .then((result)=>{ return res.status(200).json(_.merge(result[0], {total : _.sumBy(result[0].products, (eacheProduct)=>{ return eacheProduct.quantity * eacheProduct.unitPrice; })})); })
+  .catch((err)=>{ logger.error(err); return next(createError(err.status || 500, err.message || 'Internal server errror')); });
 }
 
 
@@ -108,17 +100,14 @@ function removeCartproduct(req, res, next){
     let us = { $pull: { 'products': { _id: req.swagger.params.productId.value } } };
     query.updateDB(collectionName, qs, us)
     .then((result)=>{
-      if((result.result || {}).n > 0 && (result.result || {}).nModified > 0){
-        return res.status(200).json({message : 'Product removed from cart'});
+      if((result.result || {}).n > 0){
+        return query.getFromDB(collectionName, qs, {_id:0});
       }else if((result.result || {}).n ===0){
-        return res.status(204).json({messge : 'Contend to be modified not found'});
-      }else if((result.result || {}).nModified === 0){
-        return res.status(500).json({message : 'Could not modify the product'});
+        return promise.reject({status : 204, message: 'Content not found'});
       }else{
-        return res.status(500).json({message : 'Something wrong happend'});
+        return promise.reject({status : 500, message : 'Something wrong happend'});
       }
-    }).catch((err)=>{
-      logger.error(err);
-      return res.status(500).json({message : 'Internal server error'});
-    });
+    })
+    .then((result)=>{ return res.status(200).json(_.merge(result[0], {total : _.sumBy(result[0].products, (eacheProduct)=>{ return eacheProduct.quantity * eacheProduct.unitPrice; })})); })
+    .catch((err)=>{ logger.error(err); return next(createError(err.status || 500, err.message || 'Internal server errror')); });
 }

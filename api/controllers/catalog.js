@@ -23,7 +23,7 @@ function getProduct(req, res, next) {
   let qs = {}, sort = {};
   if(req.swagger.params._id.value){
     if(!IdRegExp.test(req.swagger.params._id.value)){
-      return res.status(400).json({message : 'Bad request, Id is not in write format'});
+      return res.status(400).json({message : 'Bad request, Id is not in right format'});
     }
     qs._id = new ObjectId(req.swagger.params._id.value);
   }
@@ -32,12 +32,10 @@ function getProduct(req, res, next) {
   }
   let sortId = req.swagger.params.sort.value;
   if(sortId){
-    if(sortId === 'name'){
-      sort.name = 1;
-    }
     if(sortId === 'price'){
-      sort.price = 1;
+      sort.unitPrice = 1;
     }
+
   }
   let priceRange = req.swagger.params.priceRange.value;
   if(priceRange){
@@ -45,7 +43,7 @@ function getProduct(req, res, next) {
       qs.unitPrice = {$lt : 5};
     }
     if(priceRange === 'from5To10'){
-      qs.unitPrice = {$gt : 5, $lt:10};
+      qs.unitPrice = {$gte : 5, $lte:10};
     }
     if(priceRange === 'greaterThan10'){
       qs.unitPrice = { $gt : 10 };
@@ -57,13 +55,18 @@ function getProduct(req, res, next) {
       };
   query.getFromDB(collectionName, qs, {}, paging, sort)
   .then((result)=>{
+    if(sortId === 'name'){
+      result = result.sort(function(a,b){
+          return a.name.localeCompare(b.name);
+      });
+    }
     return query.findCount(collectionName, qs)
     .then((count)=>{
         return res.json({total : count, count : result.length, results : result});
     });
   }).catch((err)=>{
     logger.error(err);
-    return res.status(500).json(err);
+    return next(createError(err.status || 500, err.message || 'Internal server errror'));
   });
 
 }
@@ -76,14 +79,14 @@ function addProduct(req, res, next){
     return res.status(201).json(result[0]);
   })
   .catch((err)=>{
-    //logger.error(err);
-    return res.status(500).json({message : 'Internal server error'});
+    logger.error(err);
+    return next(createError(err.status || 500, err.message || 'Internal server errror'));
   });
 }
 
 function updateProduct(req, res, next){
   if(!IdRegExp.test(req.swagger.params._id.value)){
-    return res.status(400).json({message : 'Bad request, Id is not in write format'});
+    return res.status(400).json({message : 'Bad request, Id is not in right format'});
   }
   let qs = _.assign({}, {_id : new ObjectId(req.swagger.params._id.value)});
   let us = _.assign({}, {name : req.body.name, unitPrice : req.body.unitPrice, quantity : req.body.quantity});
@@ -92,7 +95,7 @@ function updateProduct(req, res, next){
     if((result.result || {}).n > 0){
       return query.getFromDB(collectionName, qs);
     }else if((result.result || {}).n ===0){
-      return promise.reject({status : 204, message : 'Contend to be modified not found'});
+      return promise.reject({status : 204, message : 'Content not found'});
     }else{
       return promise.reject({status : 500, message : 'Something wrong happend'});
     }
@@ -101,13 +104,13 @@ function updateProduct(req, res, next){
   .then((result)=> { return res.status(200).json(result[0]); })
   .catch((err)=>{
     logger.error(err);
-    return next(err);
+    return next(createError(err.status || 500, err.message || 'Internal server errror'));
   });
 }
 
 function updateProductPartially(req, res, next){
   if(!IdRegExp.test(req.swagger.params._id.value)){
-    return res.status(400).json({message : 'Bad request, Id is not in write format'});
+    return res.status(400).json({message : 'Bad request, Id is not in right format'});
   }
   let qs = { _id : new ObjectId(req.swagger.params._id.value)};
   let us = _.pickBy(_.assign({}, {name : req.body.name, unitPrice : req.body.unitPrice, quantity : req.body.quantity}), (prop)=>{
@@ -121,7 +124,7 @@ function updateProductPartially(req, res, next){
     if((result.result || {}).n > 0){
       return query.getFromDB(collectionName, qs);
     }else if((result.result || {}).n ===0){
-      return promise.reject({status : 204, message : 'Contend to be modified not found'});
+      return promise.reject({status : 204, message : 'Content not found'});
     }else{
       return promise.reject({status : 500, message : 'Something wrong happend'});
     }
@@ -131,28 +134,28 @@ function updateProductPartially(req, res, next){
   })
   .catch((err)=>{
     logger.error(err);
-    return next(err);
+    return next(createError(err.status || 500, err.message || 'Internal server errror'));
   });
 }
 
 
 function deleteProduct(req, res, next){
   if(!IdRegExp.test(req.swagger.params._id.value)){
-    return res.status(400).json({message : 'Bad request, Id is not in write format'});
+    return res.status(400).json({message : 'Bad request, Id is not in right format'});
   }
   let qs =  {_id : new ObjectId(req.swagger.params._id.value)};
   query.removeFromDB(collectionName, qs)
   .then((result)=>{
-      return (result.result ||  {}).n > 0 ?  res.status(200).json({message : `Successfully removed product with id ${req.swagger.params._id_value}`}) : res.status(204).json({message : `Content not found with id ${req.swagger.params._id_value}`});
+      return (result.result ||  {}).n > 0 ?  res.status(200).json({message : `Successfully removed product with id ${req.swagger.params._id.value}`}) : res.status(204).json({message : `Content not found with id ${req.swagger.params._id.value}`});
   }).catch((err)=>{
     logger.error(err);
-    return next(err);
+    return next(createError(err.status || 500, err.message || 'Internal server errror'));
   });
 }
 function addItem(req, res, next){
   let _id = req.swagger.params.productId.value;
   if(!IdRegExp.test(_id)){
-    return res.status(400).json({message : 'Product id is not correct'});
+    return res.status(400).json({message : 'Product id is not in right format'});
   }
   let qs = { _id : new ObjectId(_id)};
   let us = {$inc : _.assign({},{quantity : req.body.quantity})};
@@ -161,7 +164,7 @@ function addItem(req, res, next){
     if((result.result || {}).n > 0){
       return query.getFromDB(collectionName, qs);
     }else if((result.result || {}).n ===0){
-      return promise.reject({status : 204, message : 'Contend to be modified not found'});
+      return promise.reject({status : 204, message : 'Content not found'});
     }else{
       return promise.reject({status : 500, message : 'Something wrong happend'});
     }
@@ -171,14 +174,14 @@ function addItem(req, res, next){
   })
   .catch((err)=>{
     logger.error(err);
-    return next(createError(err.status, err.message));
+    return next(createError(err.status || 500, err.message || 'Internal server errror'));
   });
 }
 
 function removeItem(req, res, next){
   let _id = req.swagger.params.productId.value;
   if(!IdRegExp.test(_id)){
-    return res.status(400).json({message : 'Product id is not correct'});
+    return res.status(400).json({message : 'Product id is not in right format'});
   }
   let qs = { _id : new ObjectId(_id)};
   let us = {$inc : _.assign({},{quantity : -req.body.quantity})};
@@ -187,7 +190,7 @@ function removeItem(req, res, next){
     if((result.result || {}).n > 0){
       return query.getFromDB(collectionName, qs);
     }else if((result.result || {}).n ===0){
-      return promise.reject({status : 204, message : 'Contend to be modified not found'});
+      return promise.reject({status : 204, message : 'Content not found'});
     }else{
       return promise.reject({status : 500, message : 'Something wrong happend'});
     }
@@ -197,6 +200,6 @@ function removeItem(req, res, next){
   })
   .catch((err)=>{
     logger.error(err);
-    return next(err);
+    return next(createError(err.status || 500, err.message || 'Internal server errror'));
   });
 }
