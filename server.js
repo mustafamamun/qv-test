@@ -31,6 +31,7 @@ function start() {
           });
           var port = config.get('port') || 10010;
           server = app.listen(port);
+          logger.info('Access http://127.0.0.1:10010/docs to see the swagger');
           resolve();
         });
     });
