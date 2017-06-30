@@ -8,7 +8,6 @@
   "license": "",
   "main": "app.js",
   "dependencies": {
-    "app-root-path": "^2.0.1",
     "babel-preset-es2015-node": "^6.1.1",
     "bluebird": "^3.5.0",
     "config": "^1.26.1",
@@ -18,7 +17,6 @@
     "morgan": "^1.8.2",
     "swagger-express-mw": "^0.7.0",
     "swagger-tools": "^0.10.1",
-    "uuid": "^3.1.0",
     "winston": "^2.3.1"
   },
   "devDependencies": {
@@ -28,7 +26,7 @@
     "mocha": "^3.4.2",
     "should": "^7.1.0",
     "supertest": "^1.0.0",
-    "tape": "^4.6.3"
+    "uuid": "^3.1.0",
   },
   "scripts": {
     "start": "babel-node app.js",
