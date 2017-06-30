@@ -2,7 +2,7 @@
 'use strict';
 
 import  request from 'supertest';
-import { app , start } from './../../../server';
+import { app , start, stop } from './../../../server';
 import should from 'should';
 import { init } from '../../../api/services/db/connection';
 import uuid from 'uuid';
@@ -14,10 +14,15 @@ describe('User Controller', function() {
       .then(done)
       .catch(done);
   });
+  after('stop server', function (done) {
+      stop();
+      done();
+  });
+
 
   describe('Sould create a product in the product catalog and return the created product', function() {
 
-      it('Should return the created product', function(done) {
+      it('Should create a product and return the created product', function(done) {
           request(app)
             .post('/catalog/product')
             .send({
@@ -53,9 +58,9 @@ describe('User Controller', function() {
               });
           });
       });
-      describe('Sould update the created product', function() {
+      describe('Should update the created product', function() {
 
-          it('Sould update the created product', function(done) {
+          it('Should update the created product', function(done) {
               request(app)
                 .put(`/catalog/product?_id=${_id}`)
                 .send({
@@ -72,9 +77,9 @@ describe('User Controller', function() {
                 });
             });
         });
-        describe('Sould update the created product', function() {
+        describe('Should update the created product', function() {
 
-            it('Sould update the created product', function(done) {
+            it('Should update the created product', function(done) {
                 request(app)
                   .patch(`/catalog/product?_id=${_id}`)
                   .send({
@@ -88,9 +93,9 @@ describe('User Controller', function() {
                   });
               });
           });
-          describe('Sould update the created product', function() {
+          describe('Should add more item to created product', function() {
 
-              it('Sould update the created product', function(done) {
+              it('Should add more item to created product', function(done) {
                   request(app)
                     .post(`/catalog/item?productId=${_id}`)
                     .send({
@@ -104,9 +109,9 @@ describe('User Controller', function() {
                     });
                 });
             });
-            describe('Sould update the created product', function() {
+            describe('Should deduct some item from the created product', function() {
 
-                it('Sould update the created product', function(done) {
+                it('Should deduct some item from the created product', function(done) {
                     request(app)
                       .delete(`/catalog/item?productId=${_id}`)
                       .send({
@@ -120,9 +125,9 @@ describe('User Controller', function() {
                       });
                   });
               });
-            describe('Sould delete the created product', function() {
+            describe('Should delete the created product', function() {
 
-                it('Sould delete the created product', function(done) {
+                it('Should delete the created product', function(done) {
                     request(app)
                       .delete(`/catalog/product?_id=${_id}`)
                       .expect(200)

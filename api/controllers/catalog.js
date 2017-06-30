@@ -64,10 +64,7 @@ function getProduct(req, res, next) {
     .then((count)=>{
         return res.json({total : count, count : result.length, results : result});
     });
-  }).catch((err)=>{
-    logger.error(err);
-    return next(createError(err.status || 500, err.message || 'Internal server errror'));
-  });
+  }).catch((err)=>{ return next(createError(err.status || 500, err.message || 'Internal server errror')); });
 
 }
 
@@ -75,13 +72,8 @@ function addProduct(req, res, next){
   let productDetails = _.assign({}, {_id : new ObjectId(), name : req.body.name, unitPrice: req.body.unitPrice, quantity : req.body.quantity});
   query.saveToDB(collectionName, productDetails)
   .then(result=>query.getFromDB(collectionName, {_id: productDetails._id}))
-  .then((result)=>{
-    return res.status(201).json(result[0]);
-  })
-  .catch((err)=>{
-    logger.error(err);
-    return next(createError(err.status || 500, err.message || 'Internal server errror'));
-  });
+  .then((result)=>{ return res.status(201).json(result[0]); })
+  .catch((err)=>{ return next(createError(err.status || 500, err.message || 'Internal server errror')); });
 }
 
 function updateProduct(req, res, next){
@@ -102,10 +94,7 @@ function updateProduct(req, res, next){
 
   })
   .then((result)=> { return res.status(200).json(result[0]); })
-  .catch((err)=>{
-    logger.error(err);
-    return next(createError(err.status || 500, err.message || 'Internal server errror'));
-  });
+  .catch((err)=>{ return next(createError(err.status || 500, err.message || 'Internal server errror')); });
 }
 
 function updateProductPartially(req, res, next){
@@ -129,13 +118,8 @@ function updateProductPartially(req, res, next){
       return promise.reject({status : 500, message : 'Something wrong happend'});
     }
   })
-  .then((result)=>{
-      return res.status(200).json(result[0]);
-  })
-  .catch((err)=>{
-    logger.error(err);
-    return next(createError(err.status || 500, err.message || 'Internal server errror'));
-  });
+  .then((result)=>{  return res.status(200).json(result[0]); })
+  .catch((err)=>{ return next(createError(err.status || 500, err.message || 'Internal server errror')); });
 }
 
 
@@ -147,10 +131,7 @@ function deleteProduct(req, res, next){
   query.removeFromDB(collectionName, qs)
   .then((result)=>{
       return (result.result ||  {}).n > 0 ?  res.status(200).json({message : `Successfully removed product with id ${req.swagger.params._id.value}`}) : res.status(204).json({message : `Content not found with id ${req.swagger.params._id.value}`});
-  }).catch((err)=>{
-    logger.error(err);
-    return next(createError(err.status || 500, err.message || 'Internal server errror'));
-  });
+  }).catch((err)=>{  return next(createError(err.status || 500, err.message || 'Internal server errror')); });
 }
 function addItem(req, res, next){
   let _id = req.swagger.params.productId.value;
@@ -169,13 +150,8 @@ function addItem(req, res, next){
       return promise.reject({status : 500, message : 'Something wrong happend'});
     }
   })
-  .then((result)=>{
-      return res.status(200).json(result[0]);
-  })
-  .catch((err)=>{
-    logger.error(err);
-    return next(createError(err.status || 500, err.message || 'Internal server errror'));
-  });
+  .then((result)=>{ return res.status(200).json(result[0]); })
+  .catch((err)=>{ return next(createError(err.status || 500, err.message || 'Internal server errror')); });
 }
 
 function removeItem(req, res, next){
@@ -195,11 +171,6 @@ function removeItem(req, res, next){
       return promise.reject({status : 500, message : 'Something wrong happend'});
     }
   })
-  .then((result)=>{
-      return res.status(200).json(result[0]);
-  })
-  .catch((err)=>{
-    logger.error(err);
-    return next(createError(err.status || 500, err.message || 'Internal server errror'));
-  });
+  .then((result)=>{  return res.status(200).json(result[0]); })
+  .catch((err)=>{ return next(createError(err.status || 500, err.message || 'Internal server errror')); });
 }

@@ -9,6 +9,7 @@ import config from 'config';
 import morgan from 'morgan';
 import { logger } from './api/services/util/logger';
 const app = express();
+let server;
 let swaggerConfig = {
   appRoot: __dirname // required config
 };
@@ -25,15 +26,21 @@ function start() {
           // install middleware
           swaggerExpress.register(app);
           app.use((err, req, res, next)=>{
-              res.status(err.status).json({message : err.message});
+            if(err) logger.error(err);
+            res.status(err.status || 500).json({message : err.message || 'Internal server error'});
           });
           var port = config.get('port') || 10010;
-          app.listen(port);
+          server = app.listen(port);
           resolve();
         });
     });
 }
+
+function stop(){
+  server.close();
+}
 module.exports = {
 	start,
-  app
+  app,
+  stop
 };
